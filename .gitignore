@@ -5,3 +5,4 @@
 *.Rproj
 *.Rnw
 VARPP_out
+disease_variants.txt
