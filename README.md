@@ -87,7 +87,7 @@ source(file="scripts/processDBNSFP.R")
 Source the VARPP script and run the method. The arguments are:
 
 * `ntree`: The number of trees to grow (2000 trees takes approximately 1 hour and 54 minutes)
-* `expression`: The gene expression matrix to use in VARPP
+* `expression`: The gene expression matrix to use in VARPP. We provide expression and specificity data for GTEx and FANTOM5 under [data](./data). These were loaded into the R session at the start of this section.
 * `disease_variants`: dbNSFP annotated variants within the disease gene list returned by Phenolyzer
 * `patient_variants`: dbNSFP annotated variants from a patient VCF file
 
