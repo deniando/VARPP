@@ -17,7 +17,7 @@ if(length(toinst))
 {
     message("")
     message("ERROR: one or more required R packages are not installed:")
-    message(paste(as.character(toinst)))
+    message(paste(as.character(toinst),collapse=" ",sep=" "))
     message("Install using:\n R -e 'install.packages(c(",paste("\"",as.character(toinst),"\"",collapse=", ",sep=""),"), repos=\"http://cran.us.r-project.org\")'")
     message("")
     message("")
