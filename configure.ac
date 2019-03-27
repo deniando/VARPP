@@ -3,6 +3,7 @@
 
 AC_PREREQ([2.69])
 AC_INIT([VARPP], [m4_esyscmd_s([git describe --always])])
+AM_EXTRA_RECURSIVE_TARGETS([testrun])
 AC_CONFIG_AUX_DIR([.])
 AM_INIT_AUTOMAKE
 AC_PROG_CC
