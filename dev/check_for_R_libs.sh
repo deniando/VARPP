@@ -1,5 +1,5 @@
 #!/usr/bin/env Rscript
-libraries <- c("data.table","dplyr","ranger","precrec")
+libraries <- c("data.table","dplyr","ranger","precrec","optparse")
 
 toinst = c();
 
