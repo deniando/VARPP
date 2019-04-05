@@ -45,7 +45,14 @@ ranger: 0.11.2
 precrec: 0.10
 ```
 
-Clone the VARPP repository (https://github.com/deniando/VARPP) into a new RStudio project. From the RStudio toolbar select `File` then `New Project...`. Select `Version Control` then `Git`. Paste the repository URL under `Repository URL`, enter the directory where you would like to clone the repository, and `Create Project`.
+To clone the VARPP GitHub repository, firstly install Git large file storage (https://git-lfs.github.com/) . Within Git Bash, navigate to your desired working directory then:
+
+```
+git lfs install
+git clone https://github.com/deniando/VARPP.git
+```
+
+You can then set up a new RStudio project in this directory and proceed with analysis.
 
 ## Instructions for Use
 
