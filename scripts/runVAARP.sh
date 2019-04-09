@@ -34,7 +34,7 @@ option_list = list(
 
 opt_parser <- OptionParser(option_list=option_list,
                            description = "\nVAARP script.",
-                           epilogue = "Example:\n\n  ./VARRP.sh -b <benign.txt> -p <pathogenic.txt> -t <patient_variants.txt> -e <GTEx_expression> -n <number of trees>  \n\n");
+                           epilogue = "Example:\n\n  ./VARRP.sh -b <benign_variants-.txt> -p <disease_variants.txt> -t <patient_variants.txt> -e <GTEx_expression> -n <number of trees>  \n\n");
 
 opt <- parse_args(opt_parser)
 
@@ -80,7 +80,7 @@ VAARPcheckForFile(opt$testvar)
 patient_variant_file <- opt$testvar
 benign_variant_file <- opt$benign
 pathogenic_variant_file <- opt$pathogenic
-expression <- opt$expression
+expression <- read.csv(paste0("data/", opt$expression, ".csv")
 ntree <- opt$ntree
 
 
@@ -93,14 +93,6 @@ lapply(libraries, FUN = function(X) {
        })
 
 message("Loading files.")
-
-FANTOM5_expression <- read.csv(file="data/FANTOM5_expression.csv", stringsAsFactors=FALSE)
-
-FANTOM5_specificity <- read.csv(file="data/FANTOM5_specificity.csv", stringsAsFactors=FALSE)
-
-GTEx_expression <- read.csv(file="data/GTEx_expression.csv", stringsAsFactors=FALSE)
-
-GTEx_specificity <- read.csv(file="data/GTEx_specificity.csv", stringsAsFactors=FALSE)
 
 benign_variants <- read.table(benign_variant_file, header=TRUE, stringsAsFactors=FALSE)
 
