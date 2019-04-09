@@ -22,7 +22,7 @@ option_list = list(
     make_option(c("-e", "--expression"),
                 type="character",
                 default=NULL,
-                help="Expression or specificity data set to use: GTEx_expression, GTEx_specificity, FANTOM5_expression or FANTOM5_specificity.",
+                help="File containing gene expression or specificity.",
                 metavar="character"),
     make_option(c("-n", "--ntree"),
                 type="integer",
@@ -34,7 +34,7 @@ option_list = list(
 
 opt_parser <- OptionParser(option_list=option_list,
                            description = "\nVAARP script.",
-                           epilogue = "Example:\n\n  ./VARRP.sh -b <benign_variants-.txt> -p <disease_variants.txt> -t <patient_variants.txt> -e <GTEx_expression> -n <number of trees>  \n\n");
+                           epilogue = "Example:\n\n  ./VARRP.sh -b <benign_variants-.txt> -p <disease_variants.txt> -t <patient_variants.txt> -e <GTEx_expression.csv> -n <number of trees>  \n\n");
 
 opt <- parse_args(opt_parser)
 
@@ -53,7 +53,7 @@ if (is.null(opt$pathogenic)){
 
 if (is.null(opt$expression)){
     print_help(opt_parser)
-    stop("You have not specified the expression file to use!\n", call.=FALSE)
+    stop("Missing expression file!\n", call.=FALSE)
 }
 
 if (is.null(opt$testvar)){
@@ -74,13 +74,14 @@ VAARPcheckForFile <- function(x)
 
 VAARPcheckForFile(opt$benign)
 VAARPcheckForFile(opt$pathogenic)
+VAARPcheckForFile(opt$expression)
 VAARPcheckForFile(opt$testvar)
 
 
 patient_variant_file <- opt$testvar
 benign_variant_file <- opt$benign
 pathogenic_variant_file <- opt$pathogenic
-expression <- read.csv(paste0("data/", opt$expression, ".csv"), stringsAsFactors=FALSE)
+expression_file <- opt$expression
 ntree <- opt$ntree
 
 
@@ -93,6 +94,8 @@ lapply(libraries, FUN = function(X) {
        })
 
 message("Loading files.")
+
+expression <- read.csv(expression_file, stringsAsFactors=FALSE)
 
 benign_variants <- read.table(benign_variant_file, header=TRUE, stringsAsFactors=FALSE)
 
