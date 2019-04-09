@@ -92,7 +92,7 @@ benign_variant_file <- opt$benign
 pathogenic_variant_file <- opt$pathogenic
 expression_file <- opt$expression
 ntree <- opt$ntree
-out_file <- opt$outfile
+out_file <- opt$output
 
 
 libraries <- c("data.table","dplyr","ranger","precrec")
