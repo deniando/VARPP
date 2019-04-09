@@ -22,8 +22,6 @@ Whole genome and exome sequencing is a standard tool for the diagnosis of patien
 
 ## System Requirements
 
-### Hardware Requirements
-
 VARPP can be run on a standard computer with the following specifications:
 
 RAM: 32+ GB  
@@ -116,7 +114,33 @@ Calculate performance (area under the ROC curve and area under the precision-rec
 source(file="scripts/performanceStats.R")
 ```
 
-VARPP can also be run at the command line. Clone the VARPP GitHub repository as described under [Software Requirements](#software-requirements) then:
+### Command line usage
+
+VARPP can also be run at the command line. Clone the VARPP GitHub repository as described under [Software Requirements](#software-requirements), then install VARPP as a command line tool:
+```
+cd VARPP
+./autogen.sh
+```
+
+Check for required programs and R libraries:
+```
+make check
+```
+
+Perform a test run using the example data. This grows a single tree and writes the VARPP output list to `VARPP_out.RData` in the VARPP directory.
+```
+make testrun
+```
+
+Options for the VARPP command tool can be shown using:
+```
+./scripts/runVAARP.sh --help
+```
+
+An example of running the command line tool is shown below:
+```
+./scripts/runVAARP.sh -b data/benign_variants.txt -p data/disease_variants.txt -t data/patient_variants.txt -e data/GTEx_specificity.csv -n 2000 -o VARPP_out
+```
 
 ## Citation
 
