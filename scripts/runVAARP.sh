@@ -28,13 +28,18 @@ option_list = list(
                 type="integer",
                 default=1000,
                 help="Number of trees.",
+                metavar="character"),
+    make_option(c("-o", "--output"),
+                type="character",
+                default=NULL,
+                help="Output file name.",
                 metavar="character")
 
 );
 
 opt_parser <- OptionParser(option_list=option_list,
                            description = "\nVAARP script.",
-                           epilogue = "Example:\n\n  ./VARRP.sh -b <benign_variants-.txt> -p <disease_variants.txt> -t <patient_variants.txt> -e <GTEx_expression.csv> -n <number of trees>  \n\n");
+                           epilogue = "Example:\n\n  ./VARRP.sh -b <benign_variants-.txt> -p <disease_variants.txt> -t <patient_variants.txt> -e <GTEx_expression.csv> -n <number of trees> -o <VARPP_out>  \n\n");
 
 opt <- parse_args(opt_parser)
 
@@ -61,6 +66,10 @@ if (is.null(opt$testvar)){
     stop("Missing patient variants!\n", call.=FALSE)
 }
 
+if (is.null(opt$output)){
+    print_help(opt_parser)
+    stop("Missing output file name!\n", call.=FALSE)
+}
 
 VAARPcheckForFile <- function(x)
 {
@@ -83,6 +92,7 @@ benign_variant_file <- opt$benign
 pathogenic_variant_file <- opt$pathogenic
 expression_file <- opt$expression
 ntree <- opt$ntree
+out_file <- opt$outfile
 
 
 libraries <- c("data.table","dplyr","ranger","precrec")
@@ -376,9 +386,9 @@ message("Start running VAARP")
 
 VARPP_out <- VARPP(ntree=ntree, expression=expression, disease_variants=disease_variants, patient_variants=patient_variants)
 
-save(VARPP_out, file="VARPP_out.RData")
+save(VARPP_out, file=paste0(out_file, ".RData"))
 
-message("Done and saved to VARPP_out.RData.")
+message(paste("Done and saved to", paste0(out_file, ".RData")))
 
 print(
   evalmod(
