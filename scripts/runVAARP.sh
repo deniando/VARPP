@@ -12,7 +12,7 @@ option_list = list(
     make_option(c("-p", "--pathogenic"),
                 type="character",
                 default=NULL,
-                help="File containing pathogenic variants.",
+                help="File containing disease associated variants.",
                 metavar="character"),
     make_option(c("-t", "--testvar"),
                 type="character",

@@ -45,7 +45,7 @@ ranger: 0.11.2
 precrec: 0.10
 ```
 
-To clone the VARPP GitHub repository, firstly install Git large file storage (https://git-lfs.github.com/) . Within Git Bash, navigate to your desired working directory then:
+To clone the VARPP GitHub repository, firstly install Git large file storage (https://git-lfs.github.com/) . Then, within Git Bash, navigate to your desired working directory and:
 
 ```
 git lfs install
