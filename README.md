@@ -115,7 +115,7 @@ Calculate performance (area under the ROC curve and area under the precision-rec
 source(file="scripts/performanceStats.R")
 ```
 
-VARPP can also be run at the command line. Clone the VARPP GitHub repository as described under [Software Requirements](#Software) then:
+VARPP can also be run at the command line. Clone the VARPP GitHub repository as described under [Software Requirements](#software) then:
 
 ## Citation
 
