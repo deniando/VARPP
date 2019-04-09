@@ -80,7 +80,7 @@ VAARPcheckForFile(opt$testvar)
 patient_variant_file <- opt$testvar
 benign_variant_file <- opt$benign
 pathogenic_variant_file <- opt$pathogenic
-expression <- read.csv(paste0("data/", opt$expression, ".csv")
+expression <- read.csv(paste0("data/", opt$expression, ".csv"), stringsAsFactors=FALSE)
 ntree <- opt$ntree
 
 
