@@ -5,6 +5,7 @@
 - [Overview](#overview)
 - [Repo Contents](#repo-contents)
 - [System Requirements](#system-requirements)
+- [Software Requirements](#software-requirements)
 - [Instructions for Use](#instructions-for-use)
 - [License](./LICENSE)
 - [Issues](https://github.com/deniando/VARPP/issues)
@@ -28,7 +29,7 @@ VARPP can be run on a standard computer with the following specifications:
 RAM: 32+ GB  
 CPU: 4+ cores, 1.8+ GHz/core
 
-### Software Requirements {#software}
+## Software Requirements
 
 Before using the functions, users should have R version 3.4.3 or higher and RStudio version 1.1.456 or higher. Install the following packages:
 
@@ -115,7 +116,7 @@ Calculate performance (area under the ROC curve and area under the precision-rec
 source(file="scripts/performanceStats.R")
 ```
 
-VARPP can also be run at the command line. Clone the VARPP GitHub repository as described under [Software Requirements](#software) then:
+VARPP can also be run at the command line. Clone the VARPP GitHub repository as described under [Software Requirements](#software-requirements) then:
 
 ## Citation
 
