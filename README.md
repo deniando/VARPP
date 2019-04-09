@@ -132,12 +132,12 @@ Perform a test run using the example data. This grows a single tree and writes t
 make testrun
 ```
 
-Options for the VARPP command tool can be shown using:
+Options for the VARPP command line tool can be shown using:
 ```
 ./scripts/runVAARP.sh --help
 ```
 
-An example of running the command line tool is shown below:
+An example of running VARPP at the command line is shown below:
 ```
 ./scripts/runVAARP.sh -b data/benign_variants.txt -p data/disease_variants.txt -t data/patient_variants.txt -e data/GTEx_specificity.csv -n 2000 -o VARPP_out
 ```
