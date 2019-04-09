@@ -22,7 +22,7 @@ option_list = list(
     make_option(c("-e", "--expression"),
                 type="character",
                 default=NULL,
-                help="Which gene expression or specificity data set to use.\nAvailable options are GTEx_expression, GTEx_specificity, FANTOM5_expression & FANTOM5_specificity.",
+                help="Expression or specificity data set to use: GTEx_expression, GTEx_specificity, FANTOM5_expression or FANTOM5_specificity.",
                 metavar="character"),
     make_option(c("-n", "--ntree"),
                 type="integer",
