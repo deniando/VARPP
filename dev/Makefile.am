@@ -6,4 +6,4 @@ TESTS = check_for_programs.sh check_for_R_libs.sh
 
 
 testrun-local:
-		../scripts/runVAARP.sh  -b ../data/benign_variants.txt -p ../data/disease_variants.txt  -t ../data/patient_variants.txt -n 1  -e GTEx_specificity
+		./scripts/runVAARP.sh  -b data/benign_variants.txt -p data/disease_variants.txt  -t data/patient_variants.txt -n 1  -e GTEx_specificity
