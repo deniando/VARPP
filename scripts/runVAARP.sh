@@ -19,10 +19,10 @@ option_list = list(
                 default=NULL,
                 help="File containing patient variants.",
                 metavar="character"),
-    make_option(c("-d", "--datadir"),
+    make_option(c("-e", "--expression"),
                 type="character",
                 default=NULL,
-                help="Directory containing the expression files.",
+                help="Which gene expression or specificity data set to use. Available options are GTEx_expression, GTEx_specificity, FANTOM5_expression & FANTOM5_specificity",
                 metavar="character"),
     make_option(c("-n", "--ntree"),
                 type="integer",
@@ -34,14 +34,11 @@ option_list = list(
 
 opt_parser <- OptionParser(option_list=option_list,
                            description = "\nVAARP script.",
-                           epilogue = "Example:\n\n  ./VARRP.sh -b <benign.txt> -p <pathogenic.txt> -t <patient_variants.txt -d <directory holding expression files> -n <number of trees>  \n\n");
+                           epilogue = "Example:\n\n  ./VARRP.sh -b <benign.txt> -p <pathogenic.txt> -t <patient_variants.txt> -e <GTEx_expression> -n <number of trees>  \n\n");
 
-opt <- parse_args(opt_parser);
+opt <- parse_args(opt_parser)
 
-
-
-
-error <-  opt$error;
+error <-  opt$error
 
 summaryfilename <- opt$summary
 
@@ -54,9 +51,9 @@ if (is.null(opt$pathogenic)){
     stop("Missing pathogenic file!\n", call.=FALSE)
 }
 
-if (is.null(opt$datadir)){
+if (is.null(opt$expression)){
     print_help(opt_parser)
-    stop("Missing data directory!\n", call.=FALSE)
+    stop("You have not specified the expression file to use!\n", call.=FALSE)
 }
 
 if (is.null(opt$testvar)){
@@ -80,50 +77,36 @@ VAARPcheckForFile(opt$pathogenic)
 VAARPcheckForFile(opt$testvar)
 
 
-patient_variant_file<- opt$testvar
-
-benign_variant_file <- opt$benign;
-pathogenic_variant_file <- opt$pathogenic;
-
-data_dir <- opt$datadir;
-
+patient_variant_file <- opt$testvar
+benign_variant_file <- opt$benign
+pathogenic_variant_file <- opt$pathogenic
+expression <- opt$expression
 ntree <- opt$ntree
-
-
 
 
 libraries <- c("data.table","dplyr","ranger","precrec")
 
 message("Loading Libraries")
 
-
 lapply(libraries, FUN = function(X) {
            do.call("library", list(X)) 
        })
 
+message("Loading files.")
 
+FANTOM5_expression <- read.csv(file="data/FANTOM5_expression.csv", stringsAsFactors=FALSE)
 
+FANTOM5_specificity <- read.csv(file="data/FANTOM5_specificity.csv", stringsAsFactors=FALSE)
 
-message("Loading data files.")
+GTEx_expression <- read.csv(file="data/GTEx_expression.csv", stringsAsFactors=FALSE)
 
-filename = paste0(data_dir,"/FANTOM5_expression.csv");
-FANTOM5_expression <- read.csv(filename, stringsAsFactors=FALSE)
-
-filename = paste0(data_dir,"/FANTOM5_specificity.csv");
-
-FANTOM5_specificity <- read.csv(filename, stringsAsFactors=FALSE)
-
-filename = paste0(data_dir,"/GTEx_expression.csv");
-GTEx_expression <- read.csv(filename, stringsAsFactors=FALSE)
-
-filename = paste0(data_dir,"/GTEx_specificity.csv");
-GTEx_specificity <- read.csv(filename, stringsAsFactors=FALSE)
+GTEx_specificity <- read.csv(file="data/GTEx_specificity.csv", stringsAsFactors=FALSE)
 
 benign_variants <- read.table(benign_variant_file, header=TRUE, stringsAsFactors=FALSE)
 
 benign_variants$Pathogenic <- 0
 
-disease_variants <- fread(input= pathogenic_variant_file, header=TRUE, na.strings=".")
+disease_variants <- fread(input=pathogenic_variant_file, header=TRUE, na.strings=".")
 
 # Drop variants with multiple gene annotation
 disease_variants <- disease_variants[!(grepl(";", disease_variants$genename)), ]
@@ -165,7 +148,7 @@ VARPP <- function(ntree, expression, disease_variants, patient_variants) {
 
     exclude_cols <- c("ensembl_gene_id","hgnc_symbol","chromosome_name","start_position","end_position","gene_biotype","Pathogenic","hgnc_id","locus_group","locus_type","location","chromosome")
 
-                                        # These will be progressively filled in loop for random forest votes
+    # These will be progressively filled in loop for random forest votes
     rf_trees <- list()
 
     rf_trees$CADD_expression <- data.frame(
@@ -198,70 +181,70 @@ VARPP <- function(ntree, expression, disease_variants, patient_variants) {
 
 #### Pathogenic variants ####
 
-                                        # sample the genes with replacement
+        # sample the genes with replacement
         cls <- sample(unique(disease_variants$Gene), replace=TRUE)
 
-                                        # subset on the sampled clustering factors
+        # subset on the sampled clustering factors
         sub <- lapply(cls, FUN=function(x) disease_variants[which(disease_variants$Gene == x), "GeneVariant"])
 
-                                        # sample a single variant within each gene
+        # sample a single variant within each gene
         sub <- lapply(sub, FUN=function(x) sample(x, size=1))
 
-                                        # join and return samples
+        # join and return samples
         sub <- dplyr::combine(sub)
 
-                                        # Where the sample clusters have been selected, ensure same observation is selected
-                                        # i.e. sample with replacement for clusters but without replacement within clusters
+        # Where the sample clusters have been selected, ensure same observation is selected
+        # i.e. sample with replacement for clusters but without replacement within clusters
         sub <- sub[match(gsub("_.*$", "", sub), gsub("_.*$", "", sub))]
 
-                                        # Add pathogenic indicator and weight for ranger. Samples with a case weight of zero (OOB sample) are used for variable importance and prediction error
+        # Add pathogenic indicator and weight for ranger. Samples with a case weight of zero (OOB sample) are used for variable importance and prediction error
         sub <- bind_cols(GeneVariant=sub,
                          disease_variants[match(sub, disease_variants$GeneVariant), colnames(disease_variants) %in% c("Pathogenic","MetaSVM_rankscore","CADD_raw_rankscore")],
                          weight=rep(1, length(sub)))
 
-                                        # Add expression data
+        # Add expression data
         sub <- bind_cols(sub, expression[match(gsub("_.*$", "", sub$GeneVariant), expression$hgnc_symbol), !(colnames(expression) %in% exclude_cols)])
 
 #### Benign variants ####
 
-                                        # sample the genes with replacement
+        # sample the genes with replacement
         cls_benign <- sample(unique(benign_variants$Gene), replace=TRUE)
 
-                                        # Subset benign_variants for faster sampling
+        # Subset benign_variants for faster sampling
         benign_variants_sub <- benign_variants[benign_variants$Gene %in% unique(cls_benign), c("Gene","GeneVariant","Pathogenic","MetaSVM_rankscore","CADD_raw_rankscore")]
 
-                                        # subset on the sampled clustering factors. This is the slowest step in the function.
+        # subset on the sampled clustering factors. This is the slowest step in the function.
         sub_benign <- lapply(cls_benign, FUN=function(x) benign_variants_sub[which(benign_variants_sub$Gene == x), "GeneVariant"])
 
-                                        # sample a single variant within each gene
+        # sample a single variant within each gene
         sub_benign <- lapply(sub_benign, FUN=function(x) sample(x, size=1))
 
-                                        # join and return samples
+        # join and return samples
         sub_benign <- dplyr::combine(sub_benign)
 
-                                        # Where the sample clusters have been selected, ensure same observation is selected
-                                        # i.e. sample with replacement for clusters but without replacement within clusters
+        # Where the sample clusters have been selected, ensure same observation is selected
+        # i.e. sample with replacement for clusters but without replacement within clusters
         sub_benign <- sub_benign[match(gsub("_.*$", "", sub_benign), gsub("_.*$", "", sub_benign))]
 
-                                        # Add pathogenic indicator and weight for ranger. Samples with a case weight of zero (OOB sample) are used for variable importance and prediction error
+        # Add pathogenic indicator and weight for ranger. Samples with a case weight of zero (OOB sample) are used for variable importance and prediction error
         sub_benign <- bind_cols(GeneVariant=sub_benign,
                                 benign_variants_sub[match(sub_benign, benign_variants_sub$GeneVariant), c("Pathogenic","MetaSVM_rankscore","CADD_raw_rankscore")],
                                 weight=rep(1, length(sub_benign)))
 
-                                        # Add expression data
+        # Add expression data
         sub_benign <- bind_cols(sub_benign, expression[match(gsub("_.*$", "", sub_benign$GeneVariant), expression$hgnc_symbol), !(colnames(expression) %in% exclude_cols)])
 
 #### OOB samples are those genes not selected in bootstrap sample. Not necessary to restrict to one variant per gene in test set.
         sub_test <- disease_variants[!(disease_variants$Gene %in% cls), c("GeneVariant","Pathogenic","MetaSVM_rankscore","CADD_raw_rankscore")]
 
-                                        # Add expression data
+        # Add expression data
         sub_test <- bind_cols(sub_test,
                               weight=rep(0, nrow(sub_test)),
                               expression[match(gsub("_.*$", "", sub_test$GeneVariant), expression$hgnc_symbol), !(colnames(expression) %in% exclude_cols)])
 
         sub_benign_test <- benign_variants[!(benign_variants$Gene %in% cls_benign), c("GeneVariant","Pathogenic","MetaSVM_rankscore","CADD_raw_rankscore")]
 
-                                        # Add expression data
+        # Add expression data
         sub_benign_test <- bind_cols(sub_benign_test,
                                      weight=rep(0, nrow(sub_benign_test)),
                                      expression[match(gsub("_.*$", "", sub_benign_test$GeneVariant), expression$hgnc_symbol), !(colnames(expression) %in% exclude_cols)])
@@ -269,7 +252,7 @@ VARPP <- function(ntree, expression, disease_variants, patient_variants) {
 #### OOB samples are those patient genes not selected in bootstrap sample. Not necessary to restrict to one variant per gene in test set.
         sub_test_patient <- patient_variants[!(patient_variants$genename %in% cls) & !(patient_variants$genename %in% cls_benign), c("variant_id","genename","MetaSVM_rankscore","CADD_raw_rankscore")]
 
-                                        # Add expression data
+        # Add expression data
         sub_test_patient <- data.frame(bind_cols(sub_test_patient,
                                                  expression[match(sub_test_patient$genename, expression$hgnc_symbol), !(colnames(expression) %in% exclude_cols)]),
                                        check.names=FALSE)
@@ -283,14 +266,14 @@ VARPP <- function(ntree, expression, disease_variants, patient_variants) {
 
         dat_boot$training$Pathogenic <- factor(dat_boot$training$Pathogenic)
 
-                                        # Random forest does not handle missing data
+        # Random forest does not handle missing data
         dat_boot$training_CADD <- na.omit(dat_boot$training[ , colnames(dat_boot$training) != "MetaSVM_rankscore"])
 
         dat_boot$training_MetaSVM <- na.omit(dat_boot$training[ , colnames(dat_boot$training) != "CADD_raw_rankscore"])
 
         dat_boot$training <- NULL
 
-                                        # Random forest does not handle missing data
+        # Random forest does not handle missing data
         dat_boot$patient_CADD <- na.omit(dat_boot$patient[ , colnames(dat_boot$patient) != "MetaSVM_rankscore"])
 
         dat_boot$patient_MetaSVM <- na.omit(dat_boot$patient[ , colnames(dat_boot$patient) != "CADD_raw_rankscore"])
@@ -355,7 +338,7 @@ VARPP <- function(ntree, expression, disease_variants, patient_variants) {
 
     }
 
-                                        # Drop variants not seen by the classifier
+    # Drop variants not seen by the classifier
     rf_trees$CADD_expression <- rf_trees$CADD_expression[rf_trees$CADD_expression$predictDenom != 0, ]
 
     rf_trees$MetaSVM_expression <- rf_trees$MetaSVM_expression[rf_trees$MetaSVM_expression$predictDenom != 0, ]
@@ -369,7 +352,7 @@ VARPP <- function(ntree, expression, disease_variants, patient_variants) {
 
     accuracy <- merge(accuracy_CADD_expression, accuracy_MetaSVM_expression[ , c("GeneVariant","MetaSVM_expression")], by="GeneVariant", all=TRUE)
 
-                                        # Add CADD and MetaSVM scores for comparison to VARPP
+    # Add CADD and MetaSVM scores for comparison to VARPP
     accuracy <- merge(accuracy, bind_rows(disease_variants[ , c("GeneVariant", "CADD_raw_rankscore", "MetaSVM_rankscore")],
                                           benign_variants[ , c("GeneVariant", "CADD_raw_rankscore", "MetaSVM_rankscore")]),
                       by.x="GeneVariant", by.y="GeneVariant", all.x=TRUE, all.y=FALSE)
@@ -396,8 +379,11 @@ VARPP <- function(ntree, expression, disease_variants, patient_variants) {
 
 message("Start running VAARP")
 
-VARPP_out <- VARPP(ntree= ntree, expression=GTEx_specificity, disease_variants=disease_variants, patient_variants=patient_variants)
-message("Done.")
+VARPP_out <- VARPP(ntree=ntree, expression=expression, disease_variants=disease_variants, patient_variants=patient_variants)
+
+save(VARPP_out, file="VARPP_out.RData")
+
+message("Done and saved to VARPP_out.RData.")
 
 print(
   evalmod(
