@@ -13,7 +13,7 @@
 
 ## Overview
 
-Whole genome and exome sequencing is a standard tool for the diagnosis of patients suffering from rare and other genetic disorders. The clinical interpretation of the tens of thousands of genetic variants returned from such tests remains a major challenge.  A common approach is to apply a series of filtering steps to discard variants unlikely to cause the disease.  Here we focus on the problem of prioritising variants in respect to the observed disease phenotype(s) after these filtering steps have been applied.  We do this by linking patterns of gene expression across multiple tissues to the phenotypes which allows us to further narrow down candidates and thereby aid in discovering disease causing variants.  Our method is called VARiant Prioritisation by Phenotype (VARPP), and it is used to prioritise variants in a personalised manner by making use of the patient's phenotype(s).
+Whole genome and exome sequencing is a standard tool for the diagnosis of patients suffering from rare and other genetic disorders. The clinical interpretation of the tens of thousands of genetic variants returned from such tests remains a major challenge. A common approach is to apply a series of filtering steps to discard variants unlikely to cause the disease. Here we focus on the problem of prioritising variants in respect to the observed disease phenotype(s) after these filtering steps have been applied. We do this by linking patterns of gene expression across multiple tissues to the phenotypes which allows us to further narrow down candidates and thereby aid in discovering disease causing variants. Our method is called VARiant Prioritisation by Phenotype (VARPP), and it is used to prioritise variants in a personalised manner by making use of the patient's phenotype(s).
 
 ## Repo Contents
 
@@ -44,29 +44,29 @@ ranger: 0.11.2
 precrec: 0.10
 ```
 
-To clone the VARPP GitHub repository, firstly install Git large file storage (https://git-lfs.github.com/) . Then, within Git Bash, navigate to your desired working directory and:
+To clone the VARPP GitHub repository, firstly install Git large file storage (https://git-lfs.github.com/). Then, within Git Bash, navigate to your desired working directory and:
 
 ```
 git lfs install
 git clone https://github.com/deniando/VARPP.git
 ```
 
-You can then set up a new RStudio project in this directory and proceed with analysis.
+You can then set up a new RStudio project in this directory and proceed with analysis. The installation time on a standard computer with the aforementioned specifications is approximately 45 minutes.
 
 ## Instructions for Use
 
-Load the required files into R:
+Load the required files into R. Object `benign_variants` is the set of benign variants that VARPP samples from when growing random forests. Objects `FANTOM5_expression`, `FANTOM5_specificity`, `GTEx_expression` and `GTEx_specificity` are the gene expression and specificity data for FANTOM5 and GTEx.
 
 ```
 source(file="scripts/loadData.R")
 ```
 
-Run Phenolyzer<sup>[1]</sup> for phenotypes of interest.  Phenolyzer returns candidate gene lists associated with human diseases or phenotypes. We used the command line version available from https://github.com/WGLab/phenolyzer.  The below example shows how to use Phenolyzer for a patient with abnormality of cardiovascular system morphology (HP:0030680) and short stature (HP:0004322). The output file of interest is `out.seed_gene_list` and a copy of this file is in [data](./data).
+Phenolyzer<sup>[1]</sup> and dbNSFP<sup>[2]</sup> need to be queried each time a new disease phenotype(s) is considered, to extract disease specific genes and variants respectively. Run Phenolyzer for phenotype(s) of interest. Phenolyzer returns candidate gene lists associated with human diseases or phenotypes. We used the command line version available from https://github.com/WGLab/phenolyzer. The below example shows how to use Phenolyzer for a patient with abnormality of cardiovascular system morphology (HP:0030680) and short stature (HP:0004322). The output file of interest is `out.seed_gene_list` and a copy of this file is in [data](./data).
 ```
 perl disease_annotation.pl "HP:0030680;HP:0004322" -p -ph -logistic -addon DB_DISGENET_GENE_DISEASE_SCORE,DB_GAD_GENE_DISEASE_SCORE -addon_weight 0.25
 ```
 
-Read this file into R and output a list of genes for annotation with dbNSFP<sup>[2]</sup>:
+Read this file into R and output a list of genes for annotation with dbNSFP:
 ```
 genes <- read.table("data/out.seed_gene_list", header=TRUE, stringsAsFactors=FALSE)
 write.table(genes$Gene, file="data/genes_for_annotation.txt", row.names=FALSE, col.names=FALSE, quote=FALSE)
@@ -99,7 +99,7 @@ Source the VARPP script and run the method. The arguments are:
 
 This will return a list with the following data frames:
 
-* `accuracy`: Out of bag predicted probabilities of pathogenicity from VARPP. These are used to assess the performance of VARPP for the queried phenotype. There are two classifiers; `CADD_expression` CADD scores in combination with expression data and `MetaSVM_expression` MetaSVM scores in combination with expression data. In addition, `CADD_raw_rankscore` and `MetaSVM_rankscore` are the CADD and MetaSVM scores, whose performance can be compared to VARPP.
+* `accuracy`: Out of bag predicted probabilities of pathogenicity from VARPP. These are used to assess the performance of VARPP for the queried phenotype. There are two classifiers; `CADD_expression` CADD scores in combination with expression data and `MetaSVM_expression` MetaSVM scores in combination with expression data. In addition, `CADD_raw_rankscore` and `MetaSVM_rankscore` are the CADD and MetaSVM scores, whose performance can be compared to VARPP. Some variants will not have predictions due to missing data in either CADD/MetaSVM scores or gene expression.
 * `varimp`: The variable importance measures from VARPP for the two aforementioned classifiers
 * `patient_predictions`: Predicted probabilities of pathogenicity from VARPP for the patient variants. These predictions are in columns `CADD_expression` and `MetaSVM_expression`. The remaining columns are the dbNSFP annotations merged in from the `patient_variants` file. Some variants will not have predictions due to missing data in either CADD/MetaSVM scores or gene expression.
 
