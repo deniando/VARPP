@@ -95,17 +95,18 @@ Source the VARPP script and run the method. The arguments are:
 * `ntree`: The number of trees to grow (2000 trees takes approximately 1 hour and 54 minutes)
 * `expression`: The gene expression matrix to use in VARPP. We provide expression and specificity data for GTEx and FANTOM5 under [data](./data). These were loaded into the R session at the start of this section.
 * `disease_variants`: dbNSFP annotated variants within the disease gene list returned by Phenolyzer
+* `benign_variants`: The set of benign variants that VARPP samples from when growing random forests
 * `patient_variants`: dbNSFP annotated variants from a patient VCF file
 
 This will return a list with the following data frames:
 
-* `accuracy`: Out of bag predicted probabilities of pathogenicity from VARPP. These are used to assess the performance of VARPP for the queried phenotype. There are two classifiers; `CADD_expression` CADD scores in combination with expression data and `MetaSVM_expression` MetaSVM scores in combination with expression data. In addition, `CADD_raw_rankscore` and `MetaSVM_rankscore` are the CADD and MetaSVM scores, whose performance can be compared to VARPP. Some variants will not have predictions due to missing data in either CADD/MetaSVM scores or gene expression.
+* `accuracy`: Out of bag predicted probabilities of pathogenicity from VARPP. These are used to assess the performance of VARPP for the queried phenotype. There are two classifiers; `CADD_expression` CADD scores in combination with expression data and `MetaSVM_expression` MetaSVM scores in combination with expression data. In addition, `CADD_raw_rankscore` and `MetaSVM_rankscore` are the CADD and MetaSVM scores, whose performance can be compared to VARPP. Some variants will be omitted from this data frame due to missing data in either CADD/MetaSVM scores or gene expression.
 * `varimp`: The variable importance measures from VARPP for the two aforementioned classifiers
-* `patient_predictions`: Predicted probabilities of pathogenicity from VARPP for the patient variants. These predictions are in columns `CADD_expression` and `MetaSVM_expression`. The remaining columns are the dbNSFP annotations merged in from the `patient_variants` file. Some variants will not have predictions due to missing data in either CADD/MetaSVM scores or gene expression.
+* `patient_predictions`: Predicted probabilities of pathogenicity from VARPP for the patient variants. These predictions are in columns `CADD_expression` and `MetaSVM_expression`. The remaining columns are the dbNSFP annotations merged in from the `patient_variants` file. All patient variants will be returned but some variants will have NA predictions due to missing data in either CADD/MetaSVM scores or gene expression.
 
 ```
 source(file="scripts/VARPP.R")
-VARPP_out <- VARPP(ntree=2000, expression=GTEx_specificity, disease_variants=disease_variants, patient_variants=patient_variants)
+VARPP_out <- VARPP(ntree=2000, expression=GTEx_specificity, disease_variants=disease_variants, benign_variants=benign_variants, patient_variants=patient_variants)
 ```
 
 Calculate performance (area under the ROC curve and area under the precision-recall curve) of VARPP and compare this to the performance of CADD or MetaSVM alone. Also calculate the proportion of ClinVar pathogenic variants in the top 100 predictions of pathogenicity and compare this to CADD or MetaSVM alone. The following script calculates these performance statistics using the `VARPP_out` object:

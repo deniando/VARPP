@@ -1,5 +1,5 @@
 
-VARPP <- function(ntree, expression, disease_variants, patient_variants) {
+VARPP <- function(ntree, expression, disease_variants, benign_variants, patient_variants) {
   
   require(dplyr)
   
